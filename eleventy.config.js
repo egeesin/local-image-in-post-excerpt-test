@@ -5,6 +5,7 @@ import pluginNavigation from "@11ty/eleventy-navigation";
 import { eleventyImageTransformPlugin } from "@11ty/eleventy-img";
 
 import pluginFilters from "./_config/filters.js";
+import truncate from "truncate-html";
 
 /** @param {import("@11ty/eleventy").UserConfig} eleventyConfig */
 export default async function(eleventyConfig) {
@@ -78,9 +79,14 @@ export default async function(eleventyConfig) {
 		extensions: "html",
 
 		// Output formats for each image.
-		formats: ["avif", "webp", "auto"],
+		formats: ["webp", "auto"],
 
 		// widths: ["auto"],
+
+		// urlPath: "/urlpath/",
+		// outputDir: "./_site/urlpath/",
+
+		transformOnRequest: false, // Temporarily closed it in order to see the transformed links in web server.
 
 		defaultAttributes: {
 			// e.g. <img loading decoding> assigned on the HTML tag will override these values.
@@ -100,6 +106,23 @@ export default async function(eleventyConfig) {
 
 	eleventyConfig.addShortcode("currentBuildDate", () => {
 		return (new Date()).toISOString();
+	});
+
+	// Get first 40 words of templateContent
+	eleventyConfig.addShortcode("truncateHTML", (doc) => {
+		// console.log(doc);
+		if (!doc.hasOwnProperty('templateContent')) {
+			console.warn('Document has no property `templateContent`, skipping…');
+			return;
+		}
+		const html = doc.templateContent,
+			options = {
+				byWords: true,
+				ellipsis: "…",
+				reserveLastWord: true,
+				// excludes: ['img', 'picture']
+			}
+		return truncate(html, 20, options);
 	});
 
 	// Features to make your build faster (when you need them)
